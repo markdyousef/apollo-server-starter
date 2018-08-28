@@ -34,6 +34,7 @@ export default (sequelize, DataTypes) => {
     }
   });
 
+  // associate with Messages
   User.associate = models => {
     User.hasMany(models.Message);
   };
@@ -55,6 +56,11 @@ export default (sequelize, DataTypes) => {
   User.beforeCreate(async user => {
     user.password = await generatePasswordHash(user.password);
   });
+
+  // use prototypal inheritance to make user.password available
+  User.prototype.validatePassword = async function(password) {
+    return await bcrypt.compare(password, this.password);
+  };
 
   return User;
 };
