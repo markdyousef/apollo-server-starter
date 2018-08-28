@@ -15,6 +15,18 @@ app.use(cors());
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
+  // formatError: error => {
+  //   // remove the internal sequalize error message
+  //   // only report important validation error
+  //   const message = error.message
+  //     .replace("SequelizeValidationError: ", "")
+  //     .replace("Validation error: ", "");
+
+  //   return {
+  //     ...eror,
+  //     message
+  //   };
+  // },
   context: async () => ({
     models,
     me: await models.User.findByLogin("markdyousef") // user is read async from database -> async context
@@ -28,6 +40,8 @@ const createUsersWithMessages = async () => {
   await models.User.create(
     {
       username: "markdyousef",
+      email: "markdyousef@gmail.com",
+      password: "123456",
       messages: [
         {
           text: "The beauty of Mathematics"
@@ -42,6 +56,8 @@ const createUsersWithMessages = async () => {
   await models.User.create(
     {
       username: "andrewyousef",
+      email: "andrewyousef@outlook.com",
+      password: "123456",
       messages: [
         {
           text: "Strategic Management"

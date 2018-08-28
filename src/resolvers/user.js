@@ -1,3 +1,7 @@
+const createToken = async user => {
+  return null;
+};
+
 export default {
   Query: {
     me: async (parent, args, { me }, { models }) => {
@@ -10,6 +14,18 @@ export default {
       return await models.User.findAll();
     }
   },
+  Mutation: {
+    signUp: async (parent, { username, email, password }, { models }) => {
+      const users = await models.User.create({
+        username,
+        email,
+        password
+      });
+
+      return { token: createToken(user) };
+    }
+  },
+
   User: {
     messages: async (user, args, { models }) => {
       return await models.Message.findAll({
