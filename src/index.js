@@ -1,7 +1,8 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
-import { ApolloServer } from "apollo-server-express";
+import { ApolloServer, AuthenticationError } from "apollo-server-express";
+import jwt from "jsonwebtoken";
 
 import schema from "./schema";
 import resolvers from "./resolvers";
@@ -11,6 +12,18 @@ const { PORT } = process.env;
 
 const app = express();
 app.use(cors());
+
+// validate token session
+const getMe = async req => {
+  const token = req.headers["x-token"];
+  if (token) {
+    try {
+      return await jwt.verify(token, process.env.SECRET);
+    } catch (e) {
+      throw new AuthenticationError("Your session expired. Sign in again.");
+    }
+  }
+};
 
 const server = new ApolloServer({
   typeDefs: schema,
@@ -27,11 +40,14 @@ const server = new ApolloServer({
   //     message
   //   };
   // },
-  context: async () => ({
-    models,
-    secret: process.env.SECRET,
-    me: await models.User.findByLogin("markdyousef") // user is read async from database -> async context
-  })
+  context: async ({ req }) => {
+    const me = await getMe(req);
+    return {
+      models,
+      secret: process.env.SECRET,
+      me
+    };
+  }
 });
 
 server.applyMiddleware({ app, path: "/graphql" });
@@ -43,6 +59,7 @@ const createUsersWithMessages = async () => {
       username: "markdyousef",
       email: "markdyousef@gmail.com",
       password: "12345678",
+      role: "ADMIN",
       messages: [
         {
           text: "The beauty of Mathematics"

@@ -31,6 +31,9 @@ export default (sequelize, DataTypes) => {
         notEmpty: true,
         len: [7, 42]
       }
+    },
+    role: {
+      type: DataTypes.STRING
     }
   });
 
