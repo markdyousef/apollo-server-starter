@@ -53,7 +53,7 @@ const server = new ApolloServer({
 server.applyMiddleware({ app, path: "/graphql" });
 
 // seed database with sample data
-const createUsersWithMessages = async () => {
+const createUsersWithMessages = async date => {
   await models.User.create(
     {
       username: "markdyousef",
@@ -62,7 +62,8 @@ const createUsersWithMessages = async () => {
       role: "ADMIN",
       messages: [
         {
-          text: "The beauty of Mathematics"
+          text: "The beauty of Mathematics",
+          createdAt: date.setSeconds(date.getSeconds() + 1)
         }
       ]
     },
@@ -78,7 +79,8 @@ const createUsersWithMessages = async () => {
       password: "12345678",
       messages: [
         {
-          text: "Strategic Management"
+          text: "Strategic Management",
+          createdAt: date.setSeconds(date.getSeconds() + 1)
         }
       ]
     },
@@ -93,7 +95,7 @@ const eraseDatabaseOnSync = true;
 // sync database, then start server
 sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
   if (eraseDatabaseOnSync) {
-    createUsersWithMessages();
+    createUsersWithMessages(new Date());
   }
   app.listen({ port: PORT }, () => {
     console.log(`Apollo Server on port: ${PORT}`);
