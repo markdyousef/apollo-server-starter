@@ -1,3 +1,4 @@
+import http from "http";
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
@@ -28,29 +29,27 @@ const getMe = async req => {
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
-  // formatError: error => {
-  //   // remove the internal sequalize error message
-  //   // only report important validation error
-  //   const message = error.message
-  //     .replace("SequelizeValidationError: ", "")
-  //     .replace("Validation error: ", "");
-
-  //   return {
-  //     ...eror,
-  //     message
-  //   };
-  // },
-  context: async ({ req }) => {
-    const me = await getMe(req);
-    return {
-      models,
-      secret: process.env.SECRET,
-      me
-    };
+  context: async ({ req, connection }) => {
+    // subscriptions comes with a connection object
+    if (connection) {
+      return { models };
+    }
+    if (req) {
+      const me = await getMe(req);
+      return {
+        models,
+        secret: process.env.SECRET,
+        me
+      };
+    }
   }
 });
 
 server.applyMiddleware({ app, path: "/graphql" });
+
+// setup for exposing subscriptions
+const httpServer = http.createServer(app);
+server.installSubscriptionHandlers(httpServer);
 
 // seed database with sample data
 const createUsersWithMessages = async date => {
@@ -97,7 +96,7 @@ sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
   if (eraseDatabaseOnSync) {
     createUsersWithMessages(new Date());
   }
-  app.listen({ port: PORT }, () => {
+  httpServer.listen({ port: PORT }, () => {
     console.log(`Apollo Server on port: ${PORT}`);
   });
 });
