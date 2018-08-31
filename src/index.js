@@ -89,11 +89,11 @@ const createUsersWithMessages = async date => {
   );
 };
 
-const eraseDatabaseOnSync = true;
+const isTest = !!process.env.TEST_DATABASE;
 
 // sync database, then start server
-sequelize.sync({ force: eraseDatabaseOnSync }).then(async () => {
-  if (eraseDatabaseOnSync) {
+sequelize.sync({ force: isTest }).then(async () => {
+  if (isTest) {
     createUsersWithMessages(new Date());
   }
   httpServer.listen({ port: PORT }, () => {
